@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考試時程表 - 中秋明月篇</title>
+  
+  <!-- 引入 Google Fonts: Zen Maru Gothic (圓潤童趣風格) 與 Klee One -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+
+  <!-- 引入 Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 引入 Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    :root {
+      --night-deep: #0e1236;
+      --night-mid: #1b2058;
+      --night-light: #2c337a;
+      --moon-bright: #ffdc54;
+      --moon-glow: #ffeaa0;
+      --moon-halo: rgba(255, 224, 92, 0.45);
+      --cloud-blue-deep: #19388a;
+      --cloud-blue-light: #346bd4;
+      --ribbon-yellow: #fcd34d;
+      --card-bg: rgba(23, 30, 80, 0.68);
+      --card-border: rgba(253, 224, 71, 0.35);
+    }
+    
+    body { 
+      font-family: 'Zen Maru Gothic', 'Klee One', cursive, sans-serif;
+      background-color: var(--night-deep);
+      color: #ffffff;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* 自定義捲軸 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(14, 18, 54, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(253, 224, 71, 0.35); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(253, 224, 71, 0.65); }
+
+    /* 背景星空與明月光暈 */
+    .sky-gradient {
+      background: radial-gradient(circle at 50% 28%, #2d3886 0%, #1a205a 45%, #0e1236 100%);
+    }
+
+    .moon-orb {
+      background: radial-gradient(circle at 35% 35%, #fff6bf 0%, #ffd84d 50%, #f7be25 100%);
+      box-shadow: 
+        0 0 50px rgba(255, 220, 80, 0.55),
+        0 0 120px rgba(255, 210, 50, 0.3),
+        inset -15px -15px 40px rgba(230, 160, 20, 0.3);
+    }
+
+    .moon-clock-text {
+      text-shadow: 
+        0 0 15px rgba(255, 235, 130, 0.8),
+        0 4px 12px rgba(10, 15, 45, 0.9);
+    }
+
+    .gold-glow-text {
+      color: #ffea79;
+      text-shadow: 0 0 12px rgba(255, 234, 121, 0.6);
+    }
+
+    /* 動畫效果 */
+    @keyframes floatGentle {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(1deg); }
+    }
+    @keyframes floatBunny1 {
+      0%, 100% { transform: translateY(0px) rotate(-12deg) scale(1); }
+      50% { transform: translateY(-8px) rotate(-8deg) scale(1.03); }
+    }
+    @keyframes floatBunny2 {
+      0%, 100% { transform: translateY(0px) rotate(15deg) scale(1); }
+      50% { transform: translateY(-12px) rotate(18deg) scale(1.05); }
+    }
+    @keyframes ribbonWave {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(2deg) scale(1.02); }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.25); filter: drop-shadow(0 0 6px #ffe66d); }
+    }
+    @keyframes pulseRing {
+      0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.6); }
+      70% { box-shadow: 0 0 0 14px rgba(253, 224, 71, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); }
+    }
+
+    .anim-float-character { animation: floatGentle 5s ease-in-out infinite; }
+    .anim-bunny-top { animation: floatBunny1 4s ease-in-out infinite; }
+    .anim-bunny-bottom { animation: floatBunny2 4.5s ease-in-out infinite 0.5s; }
+    .anim-ribbon { animation: ribbonWave 6s ease-in-out infinite; transform-origin: top center; }
+
+    /* 卡片磨砂玻璃與邊框 */
+    .moon-card {
+      background: rgba(22, 28, 77, 0.72);
+      border: 2px solid rgba(254, 240, 138, 0.28);
+      backdrop-filter: blur(10px);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .moon-card:hover {
+      background: rgba(30, 39, 102, 0.88);
+      border-color: rgba(254, 240, 138, 0.7);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(5, 8, 30, 0.5), 0 0 20px rgba(255, 220, 90, 0.2);
+    }
+    .moon-card-active {
+      background: linear-gradient(135deg, rgba(38, 48, 125, 0.95), rgba(28, 32, 90, 0.9));
+      border: 3px solid #fde047;
+      box-shadow: 
+        0 0 25px rgba(253, 224, 71, 0.45),
+        0 14px 32px rgba(5, 8, 30, 0.7);
+      animation: pulseRing 2.8s infinite;
+    }
+
+    /* 雲紋裝飾陰影 */
+    .cloud-shadow {
+      filter: drop-shadow(0 10px 18px rgba(5, 8, 28, 0.65));
+    }
+    
+    /* 輸入框美化 */
+    .moon-input {
+      background: rgba(14, 18, 54, 0.75);
+      border: 2px solid rgba(253, 224, 71, 0.3);
+      color: #fff;
+      transition: all 0.25s;
+    }
+    .moon-input:focus {
+      outline: none;
+      border-color: #fde047;
+      box-shadow: 0 0 15px rgba(253, 224, 71, 0.3);
+      background: rgba(18, 24, 70, 0.95);
+    }
+    ::-webkit-calendar-picker-indicator {
+      filter: invert(1) sepia(100%) saturate(1000%) hue-rotate(360deg);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between sky-gradient relative overflow-hidden select-none">
+
+  <!-- 星星裝飾 (純CSS/SVG) -->
+  <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+    <!-- 閃爍十字星 (比照附件一插畫特色) -->
+    <span class="absolute top-[8%] left-[12%] text-amber-300 text-2xl font-bold" style="animation: twinkle 3s infinite;">✦</span>
+    <span class="absolute top-[18%] left-[28%] text-amber-200 text-sm font-bold" style="animation: twinkle 4s infinite 1s;">✦</span>
+    <span class="absolute top-[6%] right-[18%] text-amber-300 text-xl font-bold" style="animation: twinkle 3.5s infinite 0.5s;">✦</span>
+    <span class="absolute top-[35%] right-[8%] text-amber-200 text-2xl font-bold" style="animation: twinkle 4.2s infinite 1.8s;">✦</span>
+    <span class="absolute bottom-[28%] left-[8%] text-amber-300 text-xl font-bold" style="animation: twinkle 3.8s infinite 2s;">✦</span>
+    <span class="absolute bottom-[18%] right-[14%] text-amber-300 text-3xl font-bold" style="animation: twinkle 5s infinite 0.3s;">✦</span>
+    <span class="absolute top-[52%] left-[4%] text-amber-200 text-base font-bold" style="animation: twinkle 3.2s infinite 1.2s;">✦</span>
+    <span class="absolute bottom-[38%] right-[28%] text-amber-200 text-sm font-bold" style="animation: twinkle 4.6s infinite 2.2s;">✦</span>
+
+    <!-- 微細星塵點 -->
+    <div class="absolute top-[14%] left-[6%] w-1.5 h-1.5 rounded-full bg-amber-200 opacity-70"></div>
+    <div class="absolute top-[22%] left-[22%] w-2 h-2 rounded-full bg-amber-100 opacity-80"></div>
+    <div class="absolute top-[10%] right-[32%] w-1.5 h-1.5 rounded-full bg-amber-200 opacity-60"></div>
+    <div class="absolute top-[40%] right-[22%] w-2 h-2 rounded-full bg-amber-300 opacity-75"></div>
+    <div class="absolute bottom-[30%] left-[24%] w-2.5 h-2.5 rounded-full bg-amber-200 opacity-90"></div>
+    <div class="absolute bottom-[15%] left-[38%] w-1.5 h-1.5 rounded-full bg-amber-100 opacity-50"></div>
+    <div class="absolute bottom-[22%] right-[38%] w-2 h-2 rounded-full bg-amber-300 opacity-80"></div>
+  </div>
+
+  <!-- 巨大金色明月 (中央後方) -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[58%] w-[330px] h-[330px] sm:w-[460px] sm:h-[460px] md:w-[600px] md:h-[600px] lg:w-[660px] lg:h-[660px] rounded-full moon-orb pointer-events-none z-0 opacity-90 transition-all duration-700">
+    <!-- 明月內部柔和陰影/坑紋光暈 -->
+    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-400/20 to-transparent"></div>
+  </div>
+
+  <!-- 左上飛奔玉兔 (Top Left Jade Rabbit) -->
+  <div class="absolute top-[6%] sm:top-[8%] left-[16%] sm:left-[22%] md:left-[28%] z-10 anim-bunny-top pointer-events-none drop-shadow-[0_4px_10px_rgba(255,255,255,0.4)]">
+    <svg width="65" height="50" viewBox="0 0 100 75" fill="none" class="w-12 sm:w-16 md:w-20 h-auto">
+      <!-- 兔子身體 -->
+      <path d="M85 30C80 20 65 18 52 24C44 28 36 34 26 36C18 38 10 44 14 55C17 62 28 62 38 56C48 50 62 50 72 45C80 41 89 36 85 30Z" fill="#FFFFFF"/>
+      <!-- 耳朵 -->
+      <path d="M28 35C24 24 16 10 20 6C23 3 30 14 34 26C35 28 30 35 28 35Z" fill="#FFFFFF"/>
+      <path d="M36 32C35 19 32 6 37 4C42 2 43 14 41 26C40 28 37 32 36 32Z" fill="#FFFFFF"/>
+      <!-- 耳朵粉紅內裡 -->
+      <path d="M23 10C24 8 28 14 31 22C29 22 25 18 23 10Z" fill="#FFCCD5"/>
+      <path d="M37 8C39 6 41 13 39 22C38 22 36 15 37 8Z" fill="#FFCCD5"/>
+      <!-- 後腿與尾巴 -->
+      <circle cx="88" cy="27" r="4.5" fill="#FFFFFF"/>
+      <path d="M68 44C74 42 85 46 88 52C89 54 84 57 78 54C72 51 68 48 68 44Z" fill="#FFFFFF"/>
+      <path d="M54 48C58 48 68 53 70 58C71 60 65 61 60 58C56 55 54 51 54 48Z" fill="#FFFFFF"/>
+      <!-- 眼睛 -->
+      <circle cx="21" cy="42" r="2.2" fill="#E63946"/>
+      <!-- 腮紅 -->
+      <circle cx="24" cy="46" r="3" fill="#FFAAA6" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <!-- 右側騰躍玉兔 (Right Leaping Jade Rabbit) -->
+  <div class="absolute top-[42%] sm:top-[38%] right-[10%] sm:right-[15%] md:right-[20%] z-10 anim-bunny-bottom pointer-events-none drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)]">
+    <svg width="75" height="55" viewBox="0 0 100 75" fill="none" class="w-14 sm:w-16 md:w-22 h-auto">
+      <path d="M20 45C26 35 40 32 54 36C62 38 70 42 80 43C88 44 94 49 90 60C86 67 75 67 66 61C56 55 42 55 33 50C25 46 16 51 20 45Z" fill="#FFFFFF"/>
+      <!-- 飛奔耳朵 -->
+      <path d="M84 44C89 33 96 18 92 14C88 11 81 22 78 34C77 37 82 43 84 44Z" fill="#FFFFFF"/>
+      <path d="M75 42C77 28 80 15 75 13C70 11 68 23 71 35C72 38 74 42 75 42Z" fill="#FFFFFF"/>
+      <circle cx="16" cy="43" r="4.5" fill="#FFFFFF"/>
+      <!-- 眼睛與腮紅 -->
+      <circle cx="84" cy="51" r="2.2" fill="#E63946"/>
+      <circle cx="80" cy="55" r="3.2" fill="#FFAAA6" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <!-- 白色祥雲 (右上側明月邊緣) -->
+  <div class="absolute top-[18%] sm:top-[16%] right-[16%] sm:right-[24%] md:right-[29%] z-10 pointer-events-none opacity-95">
+    <svg width="105" height="65" viewBox="0 0 140 85" fill="none" class="w-20 sm:w-28 md:w-32 drop-shadow-[0_4px_12px_rgba(255,255,255,0.4)]">
+      <path d="M30 65 C12 65 0 52 0 38 C0 24 14 14 28 15 C33 6 46 0 60 0 C78 0 92 10 96 24 C104 22 115 25 120 32 C128 32 135 39 135 48 C135 58 126 65 115 65 Z" fill="#FFFFFF" fill-opacity="0.95"/>
+      <path d="M110 65 C122 65 132 72 132 78 C132 84 122 85 110 85 C98 85 92 78 95 72" stroke="#f6d365" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="65" cy="38" r="14" fill="#FFFFFF" />
+      <path d="M40 40 Q55 25 70 40 T100 40" stroke="#fce7a1" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.8"/>
+    </svg>
+  </div>
+
+  <!-- 左下小朵飄逸祥雲 -->
+  <div class="absolute top-[52%] left-[14%] sm:left-[20%] z-10 pointer-events-none opacity-90">
+    <svg width="85" height="50" viewBox="0 0 110 65" fill="none" class="w-16 sm:w-20 md:w-24 drop-shadow-[0_4px_10px_rgba(255,255,255,0.3)]">
+      <path d="M20 50 C8 50 0 42 0 32 C0 20 12 12 24 14 C28 6 38 0 50 0 C64 0 76 8 78 18 C86 17 96 21 98 28 C105 29 110 35 110 42 C110 50 102 50 92 50 Z" fill="#FFFFFF" fill-opacity="0.92"/>
+      <path d="M35 32 Q48 20 62 32" stroke="#fde047" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.75"/>
+    </svg>
+  </div>
+
+  <!-- 底層古典深藍卷雲海 (Bottom Layered Navy Auspicious Clouds) -->
+  <div class="absolute -bottom-8 left-0 right-0 z-10 pointer-events-none flex justify-center w-full overflow-hidden opacity-95">
+    <svg viewBox="0 0 1440 280" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full min-w-[1100px] h-32 sm:h-44 md:h-56 cloud-shadow">
+      <!-- 後層深藍祥雲 -->
+      <path d="M0,180 C90,140 180,190 280,160 C380,130 460,180 560,150 C680,120 760,170 860,135 C980,100 1080,160 1200,125 C1320,95 1390,150 1440,160 L1440,280 L0,280 Z" fill="#142168" opacity="0.95"/>
+      <!-- 中層寶藍祥雲渦卷 -->
+      <path d="M-40,210 C80,170 160,220 260,190 C360,160 480,210 600,170 C720,135 820,190 940,155 C1060,120 1160,180 1280,150 C1380,125 1420,170 1480,190 L1480,280 L-40,280 Z" fill="#1e3a8a"/>
+      <!-- 祥雲古典迴紋/金色波紋裝飾線 -->
+      <path d="M600,185 C640,165 670,185 680,205 C685,220 670,235 650,230 C635,225 635,205 655,200" stroke="#facc15" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"/>
+      <path d="M920,165 C960,145 990,165 1000,185 C1005,200 990,215 970,210 C955,205 955,185 975,180" stroke="#facc15" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.4"/>
+      <!-- 最前層漸層深海藍 -->
+      <path d="M0,235 C120,200 240,240 380,215 C520,190 640,235 780,205 C920,175 1040,220 1180,195 C1300,170 1380,210 1440,225 L1440,280 L0,280 Z" fill="#0f174a"/>
+    </svg>
+  </div>
+
+  <!-- 頂部功能區：左側萌兔標題，右側設定齒輪按鈕 -->
+  <header class="w-full flex justify-between items-center px-4 sm:px-8 pt-4 sm:pt-6 z-30 shrink-0">
+    <!-- 左上角節慶標籤 -->
+    <div class="flex items-center gap-2.5 bg-[#1a2364]/70 border border-amber-300/40 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-lg">
+      <span class="text-xl">🌕</span>
+      <span class="text-xs sm:text-sm font-bold tracking-widest text-amber-200">中秋考程明月鏡</span>
+      <span class="hidden sm:inline-block text-[10px] bg-amber-400 text-slate-900 font-bold px-2 py-0.5 rounded-full">秋月相伴・金榜題名</span>
+    </div>
+
+    <!-- 右上角系統設定按鈕 -->
+    <button onclick="openSettings()" class="group flex items-center gap-2 bg-[#1f2770]/80 hover:bg-[#2b3599] border-2 border-amber-300/60 hover:border-amber-300 p-2 sm:px-4 sm:py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 transform hover:scale-105 active:scale-95" title="系統管理與考程編輯">
+      <i class="ph ph-gear-six text-2xl sm:text-2xl text-amber-300 group-hover:rotate-90 transition-transform duration-500"></i>
+      <span class="hidden sm:inline text-sm font-bold tracking-wider text-amber-100">設定考程</span>
+    </button>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main class="flex-1 w-full flex flex-col justify-between items-center min-h-0 relative z-20 px-3 sm:px-6 py-1">
+    
+    <!-- 中央主要展示區 (包含巨大時鐘、小叮嚀與嫦娥角色) -->
+    <div class="w-full flex flex-col items-center justify-center pt-1 pb-2 shrink-0 relative">
+
+      <!-- 可愛嫦娥角色 (比照附件一插畫特色，懸浮於時鐘旁) -->
+      <div class="absolute -top-3 sm:-top-5 md:-top-7 right-[8%] sm:right-[15%] md:right-[22%] z-20 anim-float-character pointer-events-none drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]">
+        <svg width="150" height="150" viewBox="0 0 200 200" fill="none" class="w-24 sm:w-32 md:w-40 lg:w-44 h-auto">
+          <!-- 飄動仙帶 (黃色黃緞帶) -->
+          <path d="M30 145 C15 135 5 140 2 155 C-2 170 18 180 38 165 C55 152 70 135 85 130 C100 125 115 135 125 145 C135 155 140 180 120 185 C108 188 95 178 100 162 C105 148 115 145 130 140 C145 135 160 145 175 160" stroke="#fcd34d" stroke-width="7" stroke-linecap="round" fill="none" class="anim-ribbon"/>
+          <!-- 烏黑秀髮後側長髮 -->
+          <path d="M85 85 C60 85 45 105 40 125 C35 145 42 165 65 160 C80 155 88 135 90 120 Z" fill="#382923"/>
+          <path d="M50 115 C25 125 15 145 25 162 C35 175 60 165 75 150 Z" fill="#382923"/>
+          
+          <!-- 仙女裙擺 (水藍 + 明黃底層) -->
+          <!-- 黃色襯裙邊 -->
+          <path d="M68 152 C75 168 95 175 115 170 C135 165 142 152 142 152 C132 162 118 165 105 162 C92 158 80 162 68 152 Z" fill="#ffde59"/>
+          <!-- 淺天藍仙女蓬蓬裙 -->
+          <path d="M72 125 C65 135 60 152 72 160 C84 168 95 158 105 158 C115 158 126 168 138 158 C148 150 145 135 138 125 C125 132 85 132 72 125 Z" fill="#5b9cf6"/>
+          
+          <!-- 白色漢服上衣與粉藍領 -->
+          <path d="M78 105 L66 128 C74 135 136 135 144 128 L132 105 Z" fill="#FFFFFF"/>
+          <path d="M90 106 L105 126 L120 106 Z" fill="#3b82f6"/>
+          <!-- 領口金色交叉邊飾 -->
+          <path d="M88 106 L105 124 L122 106" stroke="#fbbf24" stroke-width="3" fill="none"/>
+          
+          <!-- 腰間黃色蝴蝶結與繫帶 -->
+          <path d="M96 124 C90 118 80 118 84 128 C88 135 100 130 105 128 C110 130 122 135 126 128 C130 118 120 118 114 124 Z" fill="#fbbf24"/>
+          <path d="M102 128 L98 148 M108 128 L112 148" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- 臉蛋與耳朵 -->
+          <circle cx="105" cy="100" r="28" fill="#ffe5d9"/>
+          <circle cx="78" cy="102" r="5" fill="#ffe5d9"/>
+          <circle cx="132" cy="102" r="5" fill="#ffe5d9"/>
+
+          <!-- 招牌古風髮型雙環髻 -->
+          <path d="M85 75 C75 50 100 48 105 65 C110 48 135 50 125 75 Z" stroke="#382923" stroke-width="12" stroke-linejoin="round" fill="#382923"/>
+          <circle cx="105" cy="72" r="7" fill="#fbbf24"/>
+          <!-- 瀏海 -->
+          <path d="M82 92 C92 84 118 84 128 92 C132 105 128 80 105 80 C82 80 78 105 82 92 Z" fill="#382923"/>
+
+          <!-- 可愛五官 (黑亮眼睛與粉萌腮紅) -->
+          <circle cx="94" cy="100" r="3.2" fill="#261b17"/>
+          <circle cx="95" cy="98.5" r="1.2" fill="#ffffff"/>
+          <circle cx="116" cy="100" r="3.2" fill="#261b17"/>
+          <circle cx="117" cy="98.5" r="1.2" fill="#ffffff"/>
+          <!-- 甜美微笑 -->
+          <path d="M102 107 Q105 111 108 107" stroke="#e06d64" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- 兩頰粉嫩腮紅 -->
+          <circle cx="89" cy="105" r="5.5" fill="#ff9999" opacity="0.6"/>
+          <circle cx="121" cy="105" r="5.5" fill="#ff9999" opacity="0.6"/>
+
+          <!-- 可愛揮手小手臂 -->
+          <path d="M72 110 C62 105 52 102 48 106 C44 110 52 118 64 120 Z" fill="#FFFFFF"/>
+          <circle cx="48" cy="105" r="4.5" fill="#ffe5d9"/>
+          <path d="M138 112 C148 118 158 124 162 128 C164 132 156 138 144 130 Z" fill="#FFFFFF"/>
+          <circle cx="162" cy="128" r="4.5" fill="#ffe5d9"/>
+        </svg>
+      </div>
+
+      <!-- 核心大時鐘 (宛如懸掛在明月上的璀璨時刻) -->
+      <div class="relative flex flex-col items-center">
+        <div id="clock-display" class="font-extrabold tracking-[0.08em] tabular-nums text-center text-amber-200 moon-clock-text select-none" style="font-size: clamp(4.2rem, 16vh, 14rem); line-height: 1;">
+          --:--:--
+        </div>
+      </div>
+
+      <!-- 老師的小叮嚀卷軸 (中秋祥雲邊框橫幅) -->
+      <div id="notes-wrapper" class="mt-2 sm:mt-3 max-w-4xl w-full px-4 flex justify-center">
+        <div class="inline-flex items-center gap-2.5 bg-gradient-to-r from-amber-500/20 via-[#1f266e]/90 to-amber-500/20 border-y-2 border-amber-300/70 px-6 py-2 rounded-full shadow-[0_4px_25px_rgba(0,0,0,0.5)] backdrop-blur-md">
+          <span class="text-amber-300 text-lg sm:text-2xl animate-spin" style="animation-duration: 8s;">✦</span>
+          <div id="notes-display" class="text-base sm:text-xl md:text-2xl font-bold tracking-widest text-amber-100 text-center leading-relaxed">
+            各位同學，沉著應試，願君如月，光彩斐然！
+          </div>
+          <span class="text-amber-300 text-lg sm:text-2xl animate-spin" style="animation-duration: 8s;">✦</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 考試科目清單區塊 (動態填滿中央視野，可橫向多卡置中排版) -->
+    <div class="w-full max-w-[1550px] mx-auto px-2 sm:px-6 pb-6 sm:pb-8 flex-1 flex flex-col justify-center items-center min-h-0 z-20">
+      <div id="schedule-container" class="flex flex-row flex-wrap justify-center items-center content-center gap-3.5 sm:gap-6 w-full max-h-full overflow-y-auto py-2">
+        <!-- 卡片內容將由 JavaScript 動態渲染 -->
+      </div>
+    </div>
+  </main>
+
+  <!-- 右下方：本節考試倒數計時浮動晶片 (Floating Mid-Autumn Moon Countdown) -->
+  <div id="countdown-container" class="fixed bottom-6 right-4 sm:right-8 z-40 hidden transition-all duration-500 rounded-3xl p-3.5 sm:p-5 bg-gradient-to-br from-[#1c2468]/95 to-[#121644]/95 border-2 border-amber-300/80 backdrop-blur-lg shadow-[0_12px_40px_rgba(0,0,0,0.7)] transform translate-y-0 hover:scale-105">
+    <div class="text-amber-300 text-xs sm:text-sm font-bold tracking-[0.2em] mb-1 sm:mb-2 flex items-center justify-between gap-3">
+      <span class="flex items-center gap-1.5">
+        <i class="ph-fill ph-hourglass-high text-amber-300 animate-pulse text-base"></i> 
+        本節考試剩餘
+      </span>
+      <span class="text-[10px] bg-amber-400/20 text-amber-200 px-2 py-0.5 rounded-full border border-amber-300/40">進行中</span>
+    </div>
+    <div id="countdown-display" class="text-4xl sm:text-6xl font-mono font-black text-white tabular-nums text-center tracking-widest leading-none drop-shadow-[0_2px_10px_rgba(253,224,71,0.5)]">
+      --:--
+    </div>
+  </div>
+
+  <!-- 設定對話視窗 (System Settings Modal) -->
+  <div id="settings-modal" class="fixed inset-0 bg-[#070a24]/85 backdrop-blur-md justify-center items-center z-50 p-3 sm:p-6 hidden transition-all duration-300">
+    <div class="w-full max-w-4xl flex flex-col overflow-hidden max-h-[92vh] shadow-[0_20px_60px_rgba(0,0,0,0.8)] rounded-3xl border-2 border-amber-300/70 bg-gradient-to-b from-[#1b2160] to-[#0f143d] relative text-white">
+        
+        <!-- 彈窗頂部 Header -->
+        <div class="p-4 sm:p-6 flex justify-between items-center shrink-0 border-b border-amber-300/30 bg-[#161c56]/60">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🥮</span>
+            <div>
+              <h3 class="text-xl sm:text-2xl font-bold tracking-widest text-amber-200">
+                考程管理與畫面設定
+              </h3>
+              <p class="text-xs text-amber-200/60 tracking-wider">自訂應試科目、時間排程與老師叮嚀詞</p>
+            </div>
+          </div>
+          <button onclick="closeSettings()" class="w-10 h-10 rounded-full flex items-center justify-center text-amber-200 hover:text-white bg-white/10 hover:bg-white/20 transition-all">
+            <i class="ph ph-x text-2xl"></i>
+          </button>
+        </div>
+
+        <!-- 彈窗內容主體 (雙欄排版) -->
+        <div class="p-4 sm:p-7 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6 min-h-0">
+          
+          <!-- 左欄：全局顯示設定 -->
+          <div class="w-full md:w-5/12 flex flex-col gap-5">
+            <div class="bg-[#141a4e]/70 border border-amber-300/30 rounded-2xl p-5 shadow-inner">
+              <h4 class="text-base sm:text-lg font-bold text-amber-300 tracking-wider mb-4 flex items-center gap-2 border-b border-amber-300/20 pb-3">
+                <i class="ph ph-sliders-horizontal text-xl"></i> 畫面功能偏好
+              </h4>
+              
+              <div class="space-y-5">
+                <!-- 倒數開關 -->
+                <label class="flex items-center justify-between p-3 rounded-xl bg-[#0e133c]/60 border border-white/10 cursor-pointer hover:border-amber-300/40 transition-colors">
+                  <div class="flex items-center gap-3">
+                    <i class="ph ph-timer text-2xl text-amber-300"></i>
+                    <span class="text-sm sm:text-base font-medium tracking-wide">啟用考試倒數提示</span>
+                  </div>
+                  <input type="checkbox" id="setting-countdown" onchange="autoSaveGlobalSettings()" class="w-5 h-5 rounded accent-amber-400 cursor-pointer">
+                </label>
+
+                <!-- 小叮嚀文字輸入 -->
+                <div>
+                  <label class="block text-sm sm:text-base font-bold text-amber-200 mb-2 tracking-wider flex items-center gap-2">
+                    <i class="ph ph-chat-centered-text text-xl"></i> 老師的小叮嚀
+                  </label>
+                  <textarea id="setting-notes" rows="4" onchange="autoSaveGlobalSettings()" placeholder="例：請保持安靜，仔細作答，檢查名字與答案卡！" class="w-full p-3.5 moon-input rounded-xl text-sm sm:text-base resize-none placeholder-white/30"></textarea>
+                  <span class="text-[11px] text-amber-200/50 mt-1 block">輸入完畢點擊任意處將自動儲存生效</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右欄：考程科目清單與新增 -->
+          <div class="w-full md:w-7/12 flex flex-col">
+            <h4 class="text-base sm:text-lg font-bold text-amber-200 tracking-wider mb-3 flex items-center gap-2 border-l-4 border-amber-400 pl-3">
+              考程項目清單
+            </h4>
+            
+            <!-- 表單：新增 / 編輯 -->
+            <div class="p-4 rounded-2xl bg-[#141a4e]/90 border border-amber-300/40 mb-4 grid grid-cols-2 md:flex md:flex-wrap gap-3 items-end shadow-md">
+              <div class="col-span-2 md:flex-1 md:min-w-[120px]">
+                <label class="block text-xs font-bold text-amber-200/80 mb-1 tracking-wider">科目名稱</label>
+                <input type="text" id="new-subject" placeholder="例：國文、數學" class="w-full p-2.5 moon-input rounded-lg text-sm sm:text-base" />
+              </div>
+              <div class="col-span-1 md:w-32 lg:w-36">
+                <label class="block text-xs font-bold text-amber-200/80 mb-1 tracking-wider">開始時間</label>
+                <input type="time" id="new-start" class="w-full p-2.5 moon-input rounded-lg text-sm sm:text-base" />
+              </div>
+              <div class="col-span-1 md:w-32 lg:w-36">
+                <label class="block text-xs font-bold text-amber-200/80 mb-1 tracking-wider">結束時間</label>
+                <input type="time" id="new-end" class="w-full p-2.5 moon-input rounded-lg text-sm sm:text-base" />
+              </div>
+              <button id="btn-submit-item" type="button" onclick="addEditingItem()" class="col-span-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 font-bold p-2.5 px-4 flex items-center gap-1.5 transition-all w-full md:w-auto justify-center tracking-widest rounded-xl shadow-lg active:scale-95 text-sm sm:text-base">
+                <i id="submit-icon" class="ph ph-plus-circle font-bold text-lg"></i> 
+                <span id="submit-text">新增科目</span>
+              </button>
+            </div>
+
+            <!-- 清單列表滾動區 -->
+            <div id="editing-list" class="space-y-2.5 overflow-y-auto max-h-[35vh] pr-1.5">
+              <!-- 動態生成排程項目 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 彈窗底部按鈕列 -->
+        <div class="p-4 sm:p-5 flex justify-between items-center shrink-0 border-t border-amber-300/30 bg-[#121748]/90">
+          <span class="text-xs sm:text-sm text-amber-200/70">所有修改均已即時同步至本機儲存</span>
+          <button onclick="closeSettings()" class="px-6 py-2.5 font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl transition-all tracking-wider text-sm sm:text-base shadow-lg hover:shadow-amber-400/30 active:scale-95">
+            完成關閉
+          </button>
+        </div>
+
+    </div>
+  </div>
+
+  <!-- 自定義確認刪除對話盒 (替代原生 confirm) -->
+  <div id="confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm justify-center items-center z-50 p-4 hidden">
+    <div class="w-full max-w-sm rounded-2xl bg-[#171e54] border-2 border-amber-300 p-6 text-center shadow-2xl">
+      <div class="w-14 h-14 rounded-full bg-red-500/20 text-red-300 mx-auto flex items-center justify-center text-3xl mb-3">
+        <i class="ph ph-trash"></i>
+      </div>
+      <h4 class="text-lg font-bold text-white mb-2" id="confirm-title">確認刪除科目？</h4>
+      <p class="text-sm text-amber-100/70 mb-5" id="confirm-desc">此操作將從考程表移除該科目。</p>
+      <div class="flex gap-3">
+        <button id="confirm-btn-cancel" class="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition">取消</button>
+        <button id="confirm-btn-ok" class="flex-1 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition shadow-lg">確認刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 自定義提示吐司訊息 (替代原生 alert) -->
+  <div id="toast-message" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#1c2468] border-2 border-amber-300 text-amber-100 px-5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 transform -translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <i class="ph-fill ph-info text-amber-300 text-xl"></i>
+    <span id="toast-text" class="text-sm font-bold tracking-wider">提示訊息</span>
+  </div>
+
+  <script>
+    // 預設資料
+    const defaultData = {
+      schedule: [
+        { id: '1', subject: '國文', startTime: '08:10', endTime: '09:30' },
+        { id: '2', subject: '英文', startTime: '09:50', endTime: '11:10' },
+        { id: '3', subject: '數學', startTime: '11:30', endTime: '12:50' },
+      ],
+      settings: { 
+        showCountdown: true, 
+        teacherNotes: '各位同學，沉著應試，願君如月，光彩斐然！' 
+      }
+    };
+    
+    let appData = JSON.parse(JSON.stringify(defaultData));
+    
+    // 讀取本機資料
+    try {
+      const savedData = localStorage.getItem('boardAppData_moon');
+      if (savedData) {
+        appData = JSON.parse(savedData);
+      } else {
+        // 向下相容原本的 localStorage
+        const oldData = localStorage.getItem('boardAppData');
+        if (oldData) appData = JSON.parse(oldData);
+      }
+    } catch (e) {
+      console.warn('無法存取 localStorage', e);
+    }
+    
+    let editingSchedule = [];
+    let activeExamId = null;
+    let currentEditId = null; 
+
+    // 自訂吐司提示函式 (無 alert)
+    function showToast(text) {
+      const toast = document.getElementById('toast-message');
+      const textElem = document.getElementById('toast-text');
+      textElem.textContent = text;
+      toast.classList.remove('-translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    // 自訂確認視窗函式 (無 confirm)
+    let confirmCallback = null;
+    function openConfirm(title, desc, onConfirm) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-desc').textContent = desc;
+      confirmCallback = onConfirm;
+      
+      const modal = document.getElementById('confirm-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    document.getElementById('confirm-btn-cancel').onclick = () => {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      document.getElementById('confirm-modal').classList.remove('flex');
+      confirmCallback = null;
+    };
+
+    document.getElementById('confirm-btn-ok').onclick = () => {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      document.getElementById('confirm-modal').classList.remove('flex');
+      if (confirmCallback) confirmCallback();
+      confirmCallback = null;
+    };
+
+    // 時間格式化
+    const formatTime = (date) => {
+      const h = String(date.getHours()).padStart(2, '0');
+      const m = String(date.getMinutes()).padStart(2, '0');
+      const s = String(date.getSeconds()).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    };
+
+    // 檢查當前是否在考試時段內
+    const isCurrentExam = (start, end, timeObj) => {
+      const currentMinutes = timeObj.getHours() * 60 + timeObj.getMinutes();
+      const [startH, startM] = start.split(':').map(Number);
+      const [endH, endM] = end.split(':').map(Number);
+      const startTotal = startH * 60 + startM;
+      const endTotal = endH * 60 + endM;
+      return currentMinutes >= startTotal && currentMinutes <= endTotal;
+    };
+
+    // 渲染主畫面考程卡片
+    function renderSchedule() {
+      const container = document.getElementById('schedule-container');
+      
+      if (appData.schedule.length === 0) {
+        container.innerHTML = `
+          <div class="text-center text-amber-200/60 my-8 flex flex-col items-center w-full">
+            <span class="text-5xl mb-3">🐰</span>
+            <p class="tracking-widest text-lg font-medium">月宮裡暫無考試排程，請點右上角「設定考程」新增</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = appData.schedule.map(exam => {
+        const isActive = exam.id === activeExamId;
+        return `
+          <div class="p-3.5 sm:p-5 rounded-3xl transition-all duration-300 relative ${
+            isActive 
+              ? 'moon-card-active scale-105 z-10' 
+              : 'moon-card opacity-90 hover:opacity-100'
+          } w-fit min-w-[210px] sm:min-w-[250px] flex-shrink-0 group">
+            
+            ${isActive ? `
+              <div class="absolute -top-3.5 -left-2 bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 text-xs font-black px-3 py-1 tracking-wider rounded-full shadow-lg flex items-center gap-1 z-30 border border-white/60 animate-bounce">
+                <span>🐰</span> 進行中
+              </div>
+            ` : ''}
+
+            <div class="flex flex-col gap-2 h-full justify-center">
+              
+              <!-- 科目名稱與操作工具 -->
+              <div class="flex items-center justify-between gap-3 border-b border-amber-300/20 pb-2">
+                <span class="text-2xl sm:text-3xl font-extrabold tracking-wider ${isActive ? 'text-amber-200 drop-shadow-[0_2px_8px_rgba(253,224,71,0.6)]' : 'text-white'}">
+                  ${exam.subject}
+                </span>
+                
+                <div class="flex gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                  <button onclick="editFromMain('${exam.id}')" class="text-amber-200 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition" title="修改時間">
+                    <i class="ph ph-pencil-simple text-base sm:text-lg"></i>
+                  </button>
+                  <button onclick="deleteFromMain('${exam.id}')" class="text-rose-300 hover:text-white bg-white/10 hover:bg-rose-600/60 rounded-full p-1.5 transition" title="刪除科目">
+                    <i class="ph ph-trash text-base sm:text-lg"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 時間區塊 -->
+              <div class="flex items-center gap-3 pt-1">
+                <div class="w-10 h-10 rounded-2xl flex items-center justify-center ${isActive ? 'bg-amber-400/30 text-amber-300' : 'bg-white/5 text-amber-200/70'}">
+                  <i class="ph ${isActive ? 'ph-hourglass-high animate-spin' : 'ph-clock'} text-2xl" style="${isActive ? 'animation-duration: 6s;' : ''}"></i>
+                </div>
+                <div class="flex flex-col">
+                  <span class="tracking-wider font-mono text-lg sm:text-2xl font-bold ${isActive ? 'text-amber-200' : 'text-slate-100'}">
+                    ${exam.startTime} <span class="text-amber-400 text-sm font-normal">至</span> ${exam.endTime}
+                  </span>
+                  <span class="text-[11px] text-amber-200/60 tracking-widest font-sans">
+                    ${isActive ? '★ 當前時段作答中' : '● 預定考試時段'}
+                  </span>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 渲染設定選單中的科目清單
+    function renderEditingSchedule() {
+      const listContainer = document.getElementById('editing-list');
+      
+      if (editingSchedule.length === 0) {
+        listContainer.innerHTML = `<p class="text-center text-amber-200/40 py-6 tracking-widest text-sm">目前無任何考試科目</p>`;
+        return;
+      }
+
+      listContainer.innerHTML = editingSchedule.map(item => `
+        <div class="flex justify-between items-center p-3 rounded-xl bg-[#18205a]/80 border border-amber-300/20 hover:border-amber-300/40 transition">
+          <div class="flex items-center gap-3 flex-wrap flex-1">
+            <span class="text-base sm:text-lg font-bold text-amber-200 tracking-wider">${item.subject}</span>
+            <span class="text-white/80 px-2.5 py-0.5 rounded-md bg-black/30 font-mono text-sm tracking-wider border border-white/10">
+              ${item.startTime} - ${item.endTime}
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="editEditingItem('${item.id}')" class="text-amber-300 hover:text-white bg-amber-400/20 hover:bg-amber-400/40 p-2 rounded-lg transition" title="編輯">
+              <i class="ph ph-pencil-simple text-lg"></i>
+            </button>
+            <button onclick="removeEditingItem('${item.id}')" class="text-rose-300 hover:text-white bg-rose-500/20 hover:bg-rose-500/40 p-2 rounded-lg transition" title="刪除">
+              <i class="ph ph-trash text-lg"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 渲染老師叮嚀
+    function renderNotes() {
+      const notes = appData.settings.teacherNotes;
+      const display = document.getElementById('notes-display');
+      const wrapper = document.getElementById('notes-wrapper');
+      if (notes) {
+        display.textContent = notes;
+        wrapper.style.display = 'flex';
+      } else {
+        wrapper.style.display = 'none';
+      }
+    }
+
+    // 即時時鐘與倒數更新循環
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-display').textContent = formatTime(now);
+
+      // 檢查目前是否有進行中的考試
+      let newActiveExam = null;
+      for (const exam of appData.schedule) {
+        if (isCurrentExam(exam.startTime, exam.endTime, now)) {
+          newActiveExam = exam;
+          break;
+        }
+      }
+
+      // 當狀態改變時重新渲染卡片
+      if ((newActiveExam ? newActiveExam.id : null) !== activeExamId) {
+        activeExamId = newActiveExam ? newActiveExam.id : null;
+        renderSchedule();
+      }
+
+      // 右下角倒數懸浮視窗
+      const countdownContainer = document.getElementById('countdown-container');
+      if (appData.settings.showCountdown && newActiveExam) {
+        countdownContainer.classList.remove('hidden', 'translate-y-12', 'opacity-0');
+        countdownContainer.classList.add('translate-y-0', 'opacity-100');
+        
+        const [endH, endM] = newActiveExam.endTime.split(':').map(Number);
+        const endDate = new Date();
+        endDate.setHours(endH, endM, 0, 0);
+        
+        let diffSeconds = Math.floor((endDate - now) / 1000);
+        if (diffSeconds < 0) diffSeconds = 0; 
+        
+        const m = String(Math.floor(diffSeconds / 60)).padStart(2, '0');
+        const s = String(diffSeconds % 60).padStart(2, '0');
+        document.getElementById('countdown-display').textContent = `${m}:${s}`;
+      } else {
+        countdownContainer.classList.remove('translate-y-0', 'opacity-100');
+        countdownContainer.classList.add('translate-y-12', 'opacity-0');
+        setTimeout(() => {
+          if (!appData.settings.showCountdown || !newActiveExam) {
+            countdownContainer.classList.add('hidden');
+          }
+        }, 400); 
+      }
+    }
+
+    // 自動儲存設定
+    function autoSaveGlobalSettings() {
+      appData.settings.showCountdown = document.getElementById('setting-countdown').checked;
+      appData.settings.teacherNotes = document.getElementById('setting-notes').value.trim();
+      syncToMainBoard();
+    }
+
+    // 同步到本機資料庫
+    function syncToMainBoard() {
+      try { 
+        localStorage.setItem('boardAppData_moon', JSON.stringify(appData));
+        localStorage.setItem('boardAppData', JSON.stringify(appData)); 
+      } catch (e) {}
+      renderNotes();
+      renderSchedule();
+      updateClock();
+    }
+
+    // 開啟設定
+    function openSettings() {
+      editingSchedule = JSON.parse(JSON.stringify(appData.schedule)); 
+      document.getElementById('setting-countdown').checked = appData.settings.showCountdown;
+      document.getElementById('setting-notes').value = appData.settings.teacherNotes;
+      
+      const modal = document.getElementById('settings-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      renderEditingSchedule();
+    }
+
+    // 關閉設定
+    function closeSettings() {
+      const modal = document.getElementById('settings-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      resetInputFields();
+    }
+
+    // 從主畫面按鈕點擊編輯
+    function editFromMain(id) {
+      openSettings();
+      editEditingItem(id);
+    }
+
+    // 從主畫面按鈕刪除
+    function deleteFromMain(id) {
+      const item = appData.schedule.find(i => i.id === id);
+      const name = item ? item.subject : '此科目';
+      openConfirm(`確認刪除「${name}」？`, '刪除後將不再於主考程表顯示。', () => {
+        appData.schedule = appData.schedule.filter(i => i.id !== id);
+        activeExamId = null; 
+        syncToMainBoard();
+        showToast(`已移除 ${name}`);
+      });
+    }
+
+    // 重設輸入框狀態
+    function resetInputFields() {
+      document.getElementById('new-subject').value = '';
+      document.getElementById('new-start').value = '';
+      document.getElementById('new-end').value = '';
+      
+      currentEditId = null;
+      const btn = document.getElementById('btn-submit-item');
+      document.getElementById('submit-text').textContent = '新增科目';
+      document.getElementById('submit-icon').className = 'ph ph-plus-circle font-bold text-lg';
+      btn.className = "col-span-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-900 font-bold p-2.5 px-4 flex items-center gap-1.5 transition-all w-full md:w-auto justify-center tracking-widest rounded-xl shadow-lg active:scale-95 text-sm sm:text-base";
+    }
+
+    // 新增或儲存編輯項目
+    function addEditingItem() {
+      const subjectInput = document.getElementById('new-subject');
+      const startInput = document.getElementById('new-start');
+      const endInput = document.getElementById('new-end');
+
+      const subject = subjectInput.value.trim();
+      const startTime = startInput.value;
+      const endTime = endInput.value;
+
+      if (!subject || !startTime || !endTime) {
+        showToast('請完整填寫科目名稱與開始、結束時間！');
+        return;
+      }
+
+      if (startTime >= endTime) {
+        showToast('結束時間必須晚於開始時間！');
+        return;
+      }
+
+      if (currentEditId) {
+        const index = editingSchedule.findIndex(item => item.id === currentEditId);
+        if (index !== -1) {
+          editingSchedule[index] = { ...editingSchedule[index], subject, startTime, endTime };
+        }
+      } else {
+        editingSchedule.push({
+          id: Date.now().toString(),
+          subject,
+          startTime,
+          endTime
+        });
+      }
+
+      // 按時間先後排序
+      editingSchedule.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      
+      appData.schedule = [...editingSchedule];
+      syncToMainBoard();
+      
+      renderEditingSchedule();
+      showToast(currentEditId ? '考程已成功更新！' : '已新增考程項目！');
+      resetInputFields(); 
+    }
+
+    // 編輯項目
+    function editEditingItem(id) {
+      const item = editingSchedule.find(i => i.id === id);
+      if (item) {
+        document.getElementById('new-subject').value = item.subject;
+        document.getElementById('new-start').value = item.startTime;
+        document.getElementById('new-end').value = item.endTime;
+        currentEditId = id;
+        
+        const btn = document.getElementById('btn-submit-item');
+        document.getElementById('submit-text').textContent = '儲存修改';
+        document.getElementById('submit-icon').className = 'ph ph-check-circle font-bold text-lg';
+        btn.className = "col-span-2 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-900 font-bold p-2.5 px-4 flex items-center gap-1.5 transition-all w-full md:w-auto justify-center tracking-widest rounded-xl shadow-lg active:scale-95 text-sm sm:text-base";
+      }
+    }
+
+    // 移除編輯項目
+    function removeEditingItem(id) {
+      const item = editingSchedule.find(i => i.id === id);
+      const name = item ? item.subject : '該科目';
+      openConfirm(`確定刪除「${name}」？`, '此操作無法復原。', () => {
+        editingSchedule = editingSchedule.filter(i => i.id !== id);
+        if (currentEditId === id) resetInputFields();
+        
+        appData.schedule = [...editingSchedule];
+        syncToMainBoard();
+        renderEditingSchedule();
+        showToast(`已成功移除 ${name}`);
+      });
+    }
+
+    // 初始化啟動
+    function init() {
+      renderNotes();
+      renderSchedule(); 
+      updateClock();    
+      setInterval(updateClock, 1000);
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
